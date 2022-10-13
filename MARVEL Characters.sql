@@ -67,7 +67,7 @@ select * from Superpowers;
 
 Select distinct Characters.IdCharacter, Superpowers.IdSuperpower 	
 From Characters, Superpowers, Temporal 
-Where trim(Characters.charname) like trim(Temporal.charname) and trim(Temporal.superpowers) like ('%' + trim(Superpowers.nameSuperpower) + '%');
+Where Characters.charname like Temporal.charname and Superpowers.nameSuperpower like ('%' + Temporal.superpowers + '%');
 #////////////////////////////////////////////////////////////////////////////////////// 
 
 #DROP TABLE IF EXISTS Categories;
@@ -295,3 +295,58 @@ begin
 end $$
 delimiter ;
 call pcd_CleanDatabase();
+
+delimiter $$
+drop procedure if exists pcd_AddData$$
+create procedure pcd_AddData(in ch char(5), in idPer int, in idCH int)
+begin
+	case
+		when ch = 'u' then insert into Character_Universe(IdCharacter,IdUniverse) values(idPer, idCh);
+        when ch = 't' then insert into Character_Team(IdCharacter,IdTeam) values(idPer, idCh);
+        when ch = 'p' then insert into Character_Power(IdCharacter,IdSuperpower) values(idPer, idCh);
+        when ch = 'o' then insert into Character_Occupation(IdCharacter,IdOccupation) values(idPer, idCh);
+        when ch = 'c' then insert into Character_Category(IdCharacter,IdCategory) values(idPer, idCh);
+    end case;
+end $$
+delimiter ;
+
+/**/
+call pcd_AddData('c',64,35);
+call pcd_AddData('c',90,35);
+call pcd_AddData('c',3,40);
+call pcd_AddData('c',4,39);
+call pcd_AddData('c',5,43);
+call pcd_AddData('c',6,39);
+call pcd_AddData('c',7,35);
+call pcd_AddData('c',8,39);
+call pcd_AddData('c',9,43);
+call pcd_AddData('u',10,8);
+select * from Character_Power;
+select * from Character_Universe;
+/*//////////////////////////////////////////////////////////////////////*/
+/*//////////////////////////////////////////////////////////////////////*/
+/*//////////////////////////////////////////////////////////////////////*/
+
+/*Mostrar todos los datos*/
+select * from Temporal;
+
+/*Mostrar todos los personajes que son mutantes (mutate)*/
+select Characters.charname, Categories.nameCategory from Characters,Categories,Character_Category where (Categories.IdCategory = Character_Category.IdCategory) and (Characters.IdCharacter = Character_Category.IdCharacter) and Categories.nameCategory = 'mutate';
+
+/*Mostrar todos los personajes de Marvel Universe*/
+select Characters.charname, Universes.nameUniverse from Characters,Universes,Character_Universe where (Universes.IdUniverse = Character_Universe.IdUniverse) and (Characters.IdCharacter = Character_Universe.IdCharacter) and Universes.nameUniverse = 'Marvel Universe';
+
+/*Listar todos los Universos*/
+select * from Universes;
+
+/*Listar todos los personajes que tengan el super poder teleportation*/
+select Characters.charname, Superpowers.nameSuperpower from Characters,Superpowers,Character_Power where (Superpowers.IdSuperpower = Character_Power.IdSuperpower) and (Characters.IdCharacter = Character_Power.IdCharacter) and Superpowers.nameSuperpower = 'teleportation';
+
+/*Listar todos los personajes que tengan la ocupación de detective*/
+select Characters.charname, Activities.nameOccupation from Characters,Activities,Character_Occupation where (Activities.IdOccupation = Character_Occupation.IdOccupation) and (Characters.IdCharacter = Character_Occupation.IdCharacter) and Activities.nameOccupation = 'detective';
+
+/*Listar todos los personajes que sean del Universo Earth-616 y que tengan el super poder retrocognition*/
+select Characters.charname, Universes.nameUniverse, Superpowers.nameSuperpower from Characters,Universes,Superpowers,Character_Universe,Character_Power where (Universes.IdUniverse = Character_Universe.IdUniverse) and (Characters.IdCharacter = Character_Universe.IdCharacter) and Universes.nameUniverse = 'Earth-616' and (Superpowers.IdSuperpower = Character_Power.IdSuperpower) and (Characters.IdCharacter = Character_Power.IdCharacter) and Superpowers.nameSuperpower = 'retrocognition';
+
+/*Listar los personajes que tienen religion Catholicism y que son de tipo animated character*/
+select Characters.charname, Characters.religions, Categories.nameCategory from Characters,Categories,Character_Category where (Categories.IdCategory = Character_Category.IdCategory) and (Characters.IdCharacter = Character_Category.IdCharacter) and Characters.religions = 'Catholicism' and Categories.nameCategory = 'animated character';
